@@ -9,6 +9,7 @@
 #include "servos.h"
 #include "ServoState.h"
 #include "DynamixelState.h"
+#include "CanState.h"
 #include "I2CState.h"
 
 MainMenuState mainMenuState = MainMenuState();
@@ -52,7 +53,7 @@ AbstractState* MainMenuState::onUiEvent(struct UiState ui_state) {
 			return &i2cState;
 			break;
 		default:
-			return nullptr;
+			return &canState;
 			break;
 		}
 	}

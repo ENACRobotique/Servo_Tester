@@ -12,6 +12,7 @@
 extern "C" {
 #endif
 void init_I2C(void);
+void init_CAN(void);
 #ifdef __cplusplus
 }
 #endif

@@ -1,0 +1,58 @@
+{
+    "env": {
+        "CHIBIOS": "${workspaceFolder}/chibios_svn_mirror",
+        "ARM_TOOLCHAIN": "/opt/arm-gnu-toolchain-12.2.rel1/"
+    },
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${CHIBIOS}/os/hal/ports/STM32/STM32L4xx/**",
+                "${CHIBIOS}/os/rt/include/**",
+                "${CHIBIOS}/os/license",
+
+                "${CHIBIOS}/os/common/portability/GCC",
+                "${CHIBIOS}/os/common/startup/ARMCMx/compilers/GCC",
+                "${CHIBIOS}/os/common/startup/ARMCMx/devices/STM32L4xx",
+                "${CHIBIOS}/os/common/ext/ARM/CMSIS/Core/Include",
+                "${CHIBIOS}/os/common/ext/ST/STM32L4xx",
+                "${CHIBIOS}/os/hal/include",
+                "${CHIBIOS}/os/hal/ports/common/ARMCMx",
+                "${CHIBIOS}/os/hal/ports/STM32/STM32L4xx",
+
+                "${CHIBIOS}/os/hal/ports/STM32/LLD/ADCv3",
+                "${CHIBIOS}/os/hal/ports/STM32/LLD/CANv1",
+                "${CHIBIOS}/os/hal/ports/STM32/LLD/DACv1",
+                "${CHIBIOS}/os/hal/ports/STM32/LLD/DMAv1",
+                "${CHIBIOS}/os/hal/ports/STM32/LLD/EXTIv1",
+                "${CHIBIOS}/os/hal/ports/STM32/LLD/GPIOv3",
+                "${CHIBIOS}/os/hal/ports/STM32/LLD/I2Cv2",
+                "${CHIBIOS}/os/hal/ports/STM32/LLD/OTGv1",
+                "${CHIBIOS}/os/hal/ports/STM32/LLD/QUADSPIv1",
+                "${CHIBIOS}/os/hal/ports/STM32/LLD/RTCv2",
+                "${CHIBIOS}/os/hal/ports/STM32/LLD/SDMMCv1",
+                "${CHIBIOS}/os/hal/ports/STM32/LLD/SPIv2",
+                "${CHIBIOS}/os/hal/ports/STM32/LLD/TIMv1",
+                "${CHIBIOS}/os/hal/ports/STM32/LLD/USARTv2",
+                "${CHIBIOS}/os/hal/ports/STM32/LLD/xWDGv1",
+
+                "${CHIBIOS}/os/hal/osal/rt",
+                "${CHIBIOS}/os/rt/include",
+                //"${CHIBIOS}/os/oslib/include",
+                "${CHIBIOS}/os/common/portability/GCC",
+                //"${CHIBIOS}/os/common/ports/ARM-common",
+                //"${CHIBIOS}/os/common/ports/ARMv7-M",
+                "${CHIBIOS}/test/rt/source/test",
+                //"${CHIBIOS}/os/test/include",
+                "${CHIBIOS}/test/oslib/source/test"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/clang-14",
+            "cStandard": "c17",
+            "cppStandard": "c++14",
+            "intelliSenseMode": "linux-clang-x64"
+        }
+    ],
+    "version": 4
+}

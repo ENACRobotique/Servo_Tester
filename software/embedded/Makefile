@@ -172,6 +172,7 @@ CPPSRC += drivers/dynamixel/DynamixelSerial.cpp \
           StateMachine/ui.cpp \
           StateMachine/MainMenuState.cpp \
           StateMachine/ServoState.cpp \
+          StateMachine/CanState.cpp \
           StateMachine/DynamixelState.cpp \
           StateMachine/I2CState.cpp \
           StateMachine/StateManager.cpp \

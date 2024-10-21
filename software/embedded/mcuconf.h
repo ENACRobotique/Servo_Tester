@@ -40,7 +40,7 @@
 #define STM32_VOS                           STM32_VOS_RANGE1
 #define STM32_PVD_ENABLE                    FALSE
 #define STM32_PLS                           STM32_PLS_LEV0
-#define STM32_HSI16_ENABLED                 FALSE
+#define STM32_HSI16_ENABLED                 TRUE
 #define STM32_HSI48_ENABLED                 FALSE
 #define STM32_LSI_ENABLED                   TRUE
 #define STM32_HSE_ENABLED                   FALSE
@@ -53,9 +53,9 @@
 #define STM32_MSIRANGE                      STM32_MSIRANGE_4M
 #define STM32_MSISRANGE                     STM32_MSISRANGE_4M
 #define STM32_SW                            STM32_SW_PLL
-#define STM32_PLLSRC                        STM32_PLLSRC_MSI
+#define STM32_PLLSRC                        STM32_PLLSRC_HSI16
 #define STM32_PLLM_VALUE                    1
-#define STM32_PLLN_VALUE                    80
+#define STM32_PLLN_VALUE                    16
 #define STM32_PLLP_VALUE                    7
 #define STM32_PLLQ_VALUE                    6
 #define STM32_PLLR_VALUE                    4
@@ -101,6 +101,14 @@
 #define STM32_ADC_ADC1_DMA_PRIORITY         2
 #define STM32_ADC_ADC1_DMA_IRQ_PRIORITY     5
 #define STM32_ADC_ADC123_CLOCK_MODE         ADC_CCR_CKMODE_AHB_DIV1
+
+
+/*
+ * CAN driver system settings.
+ */
+#define STM32_CAN_USE_CAN1                  TRUE
+#define STM32_CAN_CAN1_IRQ_PRIORITY         11
+
 
 /*
  * DAC driver system settings.

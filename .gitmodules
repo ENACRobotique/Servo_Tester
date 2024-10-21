@@ -3,7 +3,7 @@
 	url = https://github.com/Fabien-B/kicad_libs_FBO.git
 [submodule "software/embedded/chibios_svn_mirror"]
 	path = software/embedded/chibios_svn_mirror
-	url = https://github.com/alex31/chibios_svn_mirror.git
+	url = https://github.com/ChibiOS/ChibiOS.git
 [submodule "software/embedded/chibios_enac_various_common"]
 	path = software/embedded/chibios_enac_various_common
 	url = https://github.com/alex31/chibios_enac_various_common.git

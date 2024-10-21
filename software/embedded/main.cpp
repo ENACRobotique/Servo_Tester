@@ -40,6 +40,7 @@ int main(void) {
 
   init_servos();
   init_I2C();
+  init_CAN();
   init_ui();
 
   stateManager.init();
