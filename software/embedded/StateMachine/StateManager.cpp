@@ -80,6 +80,7 @@ void StateManager::run() {
             }
         }
         //periodic stuff
+        current_state->periodic();
 
 		chThdSleepMilliseconds(1);
     }
