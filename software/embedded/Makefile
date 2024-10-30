@@ -177,6 +177,7 @@ CPPSRC += drivers/dynamixel/DynamixelSerial.cpp \
           StateMachine/I2CState.cpp \
           StateMachine/StateManager.cpp \
           VL6180x.cpp \
+          drivers/smart_servos/smart_servo.cpp \
           ttyConsole.cpp \
           main.cpp
 
@@ -212,7 +213,8 @@ INCDIR += $(CHIBIOS)/os/license \
 INCDIR += ./userlib/include/ \
           StateMachine/ \
           drivers/dynamixel \
-          drivers/i2c
+          drivers/i2c \
+          drivers/smart_servos
 
 #
 # Project, sources and paths

@@ -14,9 +14,18 @@
 
 MainMenuState mainMenuState = MainMenuState();
 
+enum {
+	MENU_SERVO,
+	MENU_DYNAMIXELS,
+	MENU_STS3032,
+	MENU_I2C,
+	MENU_CAN,
+};
+
 char* titles_mainmenu[] = {
 	(char*)"Servos    ",
 	(char*)"Dynamixels",
+	(char*)"STS3032   ",
 	(char*)"I2C       ",
 	(char*)"CAN       "
 };
@@ -43,16 +52,20 @@ AbstractState* MainMenuState::onUiEvent(struct UiState ui_state) {
 
 	if(ui_state.ok_clicked) {
 		switch (i) {
-		case 0:
+		case MENU_SERVO:
 			return &servoState;
 			break;
-		case 1:
+		case MENU_DYNAMIXELS:
 			return &dynamixelIDState;
 			break;
-		case 2:
+		case MENU_STS3032:
+			//dynamixelIDState.
+			return &dynamixelIDState;
+			break;
+		case MENU_I2C:
 			return &i2cState;
 			break;
-		default:
+		case MENU_CAN:
 			return &canState;
 			break;
 		}
