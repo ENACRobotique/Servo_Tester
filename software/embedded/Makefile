@@ -167,13 +167,13 @@ CSRC += ./userlib/src/lcd.c \
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
-CPPSRC += drivers/dynamixel/DynamixelSerial.cpp \
+CPPSRC += drivers/smart_servos/Dynamixel.cpp \
           StateMachine/AbstractState.cpp \
           StateMachine/ui.cpp \
           StateMachine/MainMenuState.cpp \
           StateMachine/ServoState.cpp \
           StateMachine/CanState.cpp \
-          StateMachine/DynamixelState.cpp \
+          StateMachine/SmartServoState.cpp \
           StateMachine/I2CState.cpp \
           StateMachine/StateManager.cpp \
           VL6180x.cpp \

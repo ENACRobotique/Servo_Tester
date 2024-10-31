@@ -6,7 +6,7 @@
 #define EMBEDDED_DYNAMIXELSTATE_H
 
 #include "AbstractState.h"
-#include "DynamixelSerial.h"
+#include "Dynamixel.h"
 
 enum DynamixelFunction {
     E_DynamixelMove,
@@ -15,34 +15,46 @@ enum DynamixelFunction {
     E_DynamixelSetTorque,
 };
 
-class DynamixelIDState : public AbstractState {
+enum SmartServoType {
+    S_Dynamixel,
+    S_STS3032,
+};
+
+class SmartServoFnMenuState;
+
+class SmartServoIDState : public AbstractState {
 public:
-    DynamixelIDState();
+    SmartServoIDState();
     void enter(int32_t pos_enc);
     AbstractState* onUiEvent(struct UiState ui_state);
     AbstractState* periodic();
     void leave();
 
-    uint8_t get_dynamixel_id() {
-        return dynamixel_id;
+    uint8_t get_servo_id() {
+        return smart_servo_id;
     }
 
     void set_dynamixel_id(uint8_t new_id) {
-        dynamixel_id = new_id;
+        smart_servo_id = new_id;
     }
+
+    void set_servo_type(enum SmartServoType type) {servo_type = type;}
 
 private:
     int32_t pos_enc_init;
     char txt_id[17];
-    uint8_t dynamixel_id;
+    uint8_t smart_servo_id;
+    enum SmartServoType servo_type;
+
+    friend SmartServoFnMenuState;
 
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class DynamixelFnMenuState : public AbstractState {
+class SmartServoFnMenuState : public AbstractState {
 public:
-    DynamixelFnMenuState();
+    SmartServoFnMenuState();
     void enter(int32_t pos_enc);
     AbstractState* onUiEvent(struct UiState ui_state);
     AbstractState* periodic();
@@ -59,9 +71,9 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class DynamixelMoveState : public AbstractState {
+class SmartServoMoveState : public AbstractState {
 public:
-    DynamixelMoveState();
+    SmartServoMoveState();
     void enter(int32_t pos_enc);
     AbstractState* onUiEvent(struct UiState ui_state);
     AbstractState* periodic();
@@ -72,14 +84,13 @@ private:
     int32_t last_enc;
     int16_t pos;
     char txt_position[17];
-    DynamixelSerial::RotationDirection endless_direction;
+    Dynamixel::RotationDirection endless_direction;
 
 };
 
-extern DynamixelIDState dynamixelIDState;
-extern DynamixelFnMenuState dynamixelFnMenuState;
-extern DynamixelMoveState dynamixelMoveState;
+extern SmartServoIDState smartServoIDState;
+extern SmartServoFnMenuState smartServoFnMenuState;
+extern SmartServoMoveState smartServoMoveState;
 
-extern DynamixelSerial dyn;
 
 #endif //EMBEDDED_DYNAMIXELSTATE_H

@@ -11,7 +11,7 @@
 #include "printf.h"
 #include "portage.h"
 #include "servos.h"
-#include "DynamixelState.h"
+#include "SmartServoState.h"
 
 
 /*===========================================================================*/
@@ -69,12 +69,12 @@ static void cmd_dynamixel(BaseSequentialStream *lchp, int argc,const char * cons
   sscanf(argv[1], "%d", &pos);
   if(argc == 2) {
     chprintf (lchp, "Set dynamixel %d to %d\r\n", dyn_id, pos);
-    dyn.move(dyn_id, pos);
+    //dyn.move(dyn_id, pos);
   } else if(argc == 3) {
     int speed;
     sscanf(argv[2], "%d", &speed);
     chprintf (lchp, "Set dynamixel %d to %d with speed %d\r\n", dyn_id, pos, speed);
-    dyn.moveSpeed(dyn_id, pos, speed);
+    //dyn.moveSpeed(dyn_id, pos, speed);
   }
   
   

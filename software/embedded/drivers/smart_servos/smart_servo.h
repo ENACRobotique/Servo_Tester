@@ -11,18 +11,33 @@ public:
     typedef struct {
         uint8_t id;
         uint8_t reg;
-        uint8_t data[MAX_DATA_LEN];
         uint8_t len;
+        uint8_t data[MAX_DATA_LEN];
     } record_t;
 
 
     enum Status {
         OK = 0,
-        INVALID_PARAMS,
-        TX_BUFFER_OVERFLOW,
+        // dynamixel status packet errors
+        INPUT_VOLTAGE_ERROR = 1<<0,
+        ANGLE_LIMIT_ERROR   = 1<<1,
+        OVERHEATING_ERROR   = 1<<2,
+        RANGE_ERROR         = 1<<3,
+        CHECKSUM_ERROR      = 1<<4,
+        OVERLOAD_ERROR      = 1<<5,
+        INSTRUCTION_ERROR   = 1<<6,
+
+        // errors from this lib
+        INVALID_PARAMS      = 1<<8,
+        TX_BUFFER_OVERFLOW  = 1<<9,
+        STATUS_TIMEOUT      = 1<<10,
+        ECHO_ERROR          = 1<<11,
     };
 
-    SmartServo(SerialDriver* s): sd(s){}
+    SmartServo(SerialDriver* s): sd(s), response_level(RL_NORMAL), timeout(TIME_MS2I(10)), echo_timeout(TIME_MS2I(2)){}
+
+    void init();
+    void setBaudrate(uint32_t speed);
     
     /**
      * Send ping to servo.
@@ -56,12 +71,19 @@ public:
      * Data can differ for each ID.
      */
     Status sync_write(record_t* records, size_t nb_records);
-    
 
-    
+    // Write one byte to register
+    Status writeRegister(uint8_t id, uint8_t reg, uint8_t value);
 
+    void setResponseLevel(uint8_t rl) {response_level = (ResponseLevel)rl;}
 
 private:
+
+    Status readStatus();
+    Status readEcho();
+    void flushSerialInput();
+    
+
     enum Instruction {
         SMART_SERVO_PING = 0x01,
         SMART_SERVO_READ = 0x02,
@@ -74,5 +96,15 @@ private:
         //SMART_SERVO_BULK_READ = 0x92,
     };
 
+    enum ResponseLevel {
+        RL_SILENT = 0,
+        RL_NORMAL = 1,
+    };
+
     SerialDriver* sd;
+    enum ResponseLevel response_level;
+    sysinterval_t timeout;
+    sysinterval_t echo_timeout;
 };
+
+extern SmartServo smart_servo;

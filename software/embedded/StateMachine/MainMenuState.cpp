@@ -8,7 +8,7 @@
 #include "stdutil.h"
 #include "servos.h"
 #include "ServoState.h"
-#include "DynamixelState.h"
+#include "SmartServoState.h"
 #include "CanState.h"
 #include "I2CState.h"
 
@@ -54,20 +54,16 @@ AbstractState* MainMenuState::onUiEvent(struct UiState ui_state) {
 		switch (i) {
 		case MENU_SERVO:
 			return &servoState;
-			break;
 		case MENU_DYNAMIXELS:
-			return &dynamixelIDState;
-			break;
+			smartServoIDState.set_servo_type(S_Dynamixel);
+			return &smartServoIDState;
 		case MENU_STS3032:
-			//dynamixelIDState.
-			return &dynamixelIDState;
-			break;
+			smartServoIDState.set_servo_type(S_STS3032);
+			return &smartServoIDState;
 		case MENU_I2C:
 			return &i2cState;
-			break;
 		case MENU_CAN:
 			return &canState;
-			break;
 		}
 	}
 

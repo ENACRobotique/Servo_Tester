@@ -13,6 +13,7 @@ extern "C" {
 #include "ttyConsole.h"
 #include "ui.h"
 #include "StateMachine/StateManager.h"
+#include "smart_servo.h"
 
 
 static THD_WORKING_AREA(waUiStateMachine, 500);
@@ -42,6 +43,7 @@ int main(void) {
   init_I2C();
   init_CAN();
   init_ui();
+  smart_servo.init();
 
   stateManager.init();
 
