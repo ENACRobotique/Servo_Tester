@@ -57,17 +57,17 @@ SmartServo::Status Dynamixel::moveSpeed(uint8_t id, uint16_t position, uint16_t 
 	return write(&rec, reg_write);
 }
 
-SmartServo::Status Dynamixel::setEndless(uint8_t id, bool status){
+SmartServo::Status Dynamixel::setEndless(uint8_t id, bool status) {
 	SmartServo::record_t rec = {
 		.id = id,
-		.reg = R_CCW_AngleLimit,
-		.len = 2,
+		.reg = R_CW_AngleLimit,
+		.len = 4,
 		.data = {0}
 	};
 
 	if(!status) {
 		turn(id, RotationDirection::Clockwise, 0);
-		*(uint16_t*)rec.data = 1023;
+		*((uint16_t*)rec.data + 1) = 1023;
 	}
 
 	return write(&rec);
@@ -85,6 +85,18 @@ SmartServo::Status Dynamixel::turn(uint8_t id, RotationDirection direction, uint
 	return write(&rec);
 }
 
+SmartServo::Status Dynamixel::setTorque(uint8_t id, uint16_t torque)
+{
+	SmartServo::record_t rec = {
+		.id = id,
+		.reg = R_TorqueLimit,
+		.len = 2,
+		.data = {0}
+	};
+	*(uint16_t*)rec.data = torque;
+
+	return write(&rec);
+}
 
 // SmartServo::Status DynamixelSerial::moveSpeedRW(uint8_t id, int position, int speed){
 // 	uint8_t data[5];

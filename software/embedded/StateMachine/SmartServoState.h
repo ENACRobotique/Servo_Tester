@@ -35,7 +35,7 @@ public:
         return smart_servo_id;
     }
 
-    void set_dynamixel_id(uint8_t new_id) {
+    void set_servo_id(uint8_t new_id) {
         smart_servo_id = new_id;
     }
 

@@ -26,7 +26,7 @@ SmartServo::Status STS3032::writeRegisterEPROM(uint8_t id, uint8_t reg, uint8_t 
 
 }
 
-SmartServo::Status STS3032::setID(uint8_t id, uint8_t newID){
+SmartServo::Status STS3032::setID(uint8_t id, uint8_t newID) {
     // check if newID already in use
     if (id >= 0xFE || newID >= 0xFE) {return SmartServo::INVALID_PARAMS;}
 
@@ -90,7 +90,7 @@ SmartServo::Status STS3032::setBaudrate(uint8_t id, uint32_t speed)
 }
 
 
-SmartServo::Status STS3032::move(uint8_t id, uint16_t position, bool reg_write){
+SmartServo::Status STS3032::move(uint8_t id, uint16_t position, bool reg_write) {
 	SmartServo::record_t rec = {
 		.id = id,
 		.reg = R_GoalPosition,
@@ -102,6 +102,59 @@ SmartServo::Status STS3032::move(uint8_t id, uint16_t position, bool reg_write){
 	return write(&rec, reg_write);
 }
 
+SmartServo::Status STS3032::moveSpeed(uint8_t id, uint16_t position, uint16_t speed, bool reg_write) {
+	SmartServo::record_t rec = {
+		.id = id,
+		.reg = R_GoalPosition,
+		.len = 6,
+		.data = {0}
+	};
+	*(uint16_t*)rec.data = position;
+	*((uint16_t*)rec.data+2) = speed;
+
+	return write(&rec, reg_write);
+}
+
+SmartServo::Status STS3032::setEndless(uint8_t id, bool status) {
+	SmartServo::record_t rec = {
+		.id = id,
+		.reg = R_OperationMode,
+		.len = 1,
+		.data = {0}
+	};
+
+	if(status) {
+		turn(id, RotationDirection::Clockwise, 0);
+		*(uint8_t*)rec.data = 1;
+	}
+
+	return write(&rec);
+}
+
+SmartServo::Status STS3032::turn(uint8_t id, RotationDirection direction, uint16_t speed){
+	SmartServo::record_t rec = {
+		.id = id,
+		.reg = R_RunningSpeed,
+		.len = 2,
+		.data = {0}
+	};
+	*(uint16_t*)rec.data = speed | ((int)direction) << 15;
+
+	return write(&rec);
+}
+
+SmartServo::Status STS3032::setTorque(uint8_t id, uint16_t torque)
+{
+	SmartServo::record_t rec = {
+		.id = id,
+		.reg = R_TorqueLimit,
+		.len = 2,
+		.data = {0}
+	};
+	*(uint16_t*)rec.data = torque;
+
+	return write(&rec);
+}
 
 int STS3032::readPosition(uint8_t id){
 	SmartServo::record_t rec = {

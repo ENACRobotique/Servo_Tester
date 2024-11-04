@@ -22,12 +22,13 @@ public:
     
     SmartServo::Status writeRegisterEPROM(uint8_t id, uint8_t reg, uint8_t value);
 
-	SmartServo::Status setID(uint8_t id, uint8_t newID);
+	SmartServo::Status setID(uint8_t id, uint8_t newID) override;
 
 	SmartServo::Status move(uint8_t id, uint16_t position, bool reg_write=false) override;
-	SmartServo::Status moveSpeed(uint8_t id, uint16_t position, uint16_t speed, bool reg_write=false);
-	SmartServo::Status setEndless(uint8_t id, bool status);
-	//SmartServo::Status turn(uint8_t id, RotationDirection direction, uint16_t speed);
+	SmartServo::Status moveSpeed(uint8_t id, uint16_t position, uint16_t speed, bool reg_write=false) override;
+	SmartServo::Status setEndless(uint8_t id, bool status) override;
+    SmartServo::Status turn(uint8_t id, RotationDirection direction, uint16_t speed) override;
+	SmartServo::Status setTorque(uint8_t id, uint16_t torque) override;
 	
 
     int readPosition(uint8_t id) override;

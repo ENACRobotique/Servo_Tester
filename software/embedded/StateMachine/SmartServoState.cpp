@@ -162,27 +162,34 @@ void SmartServoMoveState::enter(int32_t pos_enc) {
     {
     case E_DynamixelMove:
         pos = 512;
-        //Dynamixel::setEndless(smartServoIDState.get_servo_id(), false);
+        smartServoIDState.servo->turn(smartServoIDState.smart_servo_id, SmartServo::Counterclockwise, 0);
+        smartServoIDState.servo->setEndless(smartServoIDState.get_servo_id(), false);
+        chThdSleepMilliseconds(100);
         {
             int current_pos = smartServoIDState.servo->readPosition(smartServoIDState.get_servo_id());
             if(current_pos >= 0) {
                 pos = current_pos;
-                //Dynamixel::moveSpeed(smartServoIDState.get_servo_id(), pos, 0);     // after going back from endless mode, speed must be set ?
+                smartServoIDState.servo->moveSpeed(smartServoIDState.get_servo_id(), pos, 0);     // after going back from endless mode, speed must be set ?
             }
         }
-        chsnprintf(txt_id, sizeof(txt_id), "%s Move    %4d", *smartServoIDState.servo_txt, smartServoIDState.get_servo_id());
+        chsnprintf(txt_id, sizeof(txt_id), "%s Move   %4d", *smartServoIDState.servo_txt_short, smartServoIDState.get_servo_id());
         chsnprintf(txt_position, sizeof(txt_position), "Pos = %4d      ", pos);
         break;
     case E_DynamixelSetId:
-        chsnprintf(txt_id, sizeof(txt_id), "%s SetId   %4d", *smartServoIDState.servo_txt, smartServoIDState.get_servo_id());
+        chsnprintf(txt_id, sizeof(txt_id), "%s SetId  %4d", *smartServoIDState.servo_txt_short, smartServoIDState.get_servo_id());
         chsnprintf(txt_position, sizeof(txt_position), "ID : %3d       ", 0);
         break;
     case E_DynamixelSetSpeed:
         pos = 512;
-        // Dynamixel::setEndless(smartServoIDState.get_servo_id(), true);
-        // Dynamixel::turn(smartServoIDState.get_servo_id(), endless_direction, 0);
-        chsnprintf(txt_id, sizeof(txt_id), "%s Speed    %4d", *smartServoIDState.servo_txt, smartServoIDState.get_servo_id());
+        smartServoIDState.servo->setEndless(smartServoIDState.get_servo_id(), true);
+        smartServoIDState.servo->turn(smartServoIDState.get_servo_id(), endless_direction, 0);
+        chsnprintf(txt_id, sizeof(txt_id), "%s Speed  %4d", *smartServoIDState.servo_txt_short, smartServoIDState.get_servo_id());
         chsnprintf(txt_position, sizeof(txt_position), "Speed = %4d CW ", pos);
+        break;
+    case E_DynamixelSetTorque:
+        chsnprintf(txt_id, sizeof(txt_id), "%s Torque  %4d", *smartServoIDState.servo_txt_short, smartServoIDState.get_servo_id());
+        chsnprintf(txt_position, sizeof(txt_position), "Torque : %3d    ", 0);
+        break;
     default:
         break;
     }
@@ -208,7 +215,7 @@ AbstractState* SmartServoMoveState::onUiEvent(struct UiState ui_state) {
             lcdWriteString(&LCDD1, txt_position, 40);
         }
         else if(smartServoFnMenuState.get_function() == E_DynamixelSetSpeed) {
-            pos = CLAMP_TO(0, 1023, pos + (ui_state.pos_enc - last_enc)*ui_state.encoder_speed);
+            pos = CLAMP_TO(0, 4095, pos + (ui_state.pos_enc - last_enc)*ui_state.encoder_speed * 5);
             last_enc = ui_state.pos_enc;
 
             if(endless_direction == Dynamixel::Clockwise) {
@@ -219,7 +226,13 @@ AbstractState* SmartServoMoveState::onUiEvent(struct UiState ui_state) {
 
             
             lcdWriteString(&LCDD1, txt_position, 40);
-            // Dynamixel::turn(smartServoIDState.get_servo_id(), endless_direction, pos);
+            smartServoIDState.servo->turn(smartServoIDState.get_servo_id(), endless_direction, pos);
+        }
+        else if(smartServoFnMenuState.get_function() == E_DynamixelSetTorque) {
+            //pos = CLAMP_TO(0, 4095, pos + (ui_state.pos_enc - last_enc)*ui_state.encoder_speed * 5);
+            pos = (ui_state.pos_enc - pos_enc_init + 100)%101;
+            chsnprintf(txt_position, sizeof(txt_position), "Torque : %3d    ", pos);
+            lcdWriteString(&LCDD1, txt_position, 40);
         }
         
         
@@ -227,10 +240,10 @@ AbstractState* SmartServoMoveState::onUiEvent(struct UiState ui_state) {
 
     if(ui_state.ok_clicked) {
         if(smartServoFnMenuState.get_function() == E_DynamixelSetId) {
-            // Dynamixel::setID(smartServoIDState.get_servo_id(), pos);
-            smartServoIDState.set_dynamixel_id(pos);
+            smartServoIDState.servo->setID(smartServoIDState.get_servo_id(), pos);
+            smartServoIDState.set_servo_id(pos);
             char txt_id[17];
-            chsnprintf(txt_id, sizeof(txt_id), "Dyn SetId    %4d", pos);
+            chsnprintf(txt_id, sizeof(txt_id), "%s SetId    %4d", *smartServoIDState.servo_txt_short, pos);
             chsnprintf(txt_position, sizeof(txt_position), "Id set to %3d   ", pos);
             lcdWriteString(&LCDD1, txt_id, 0);
             lcdWriteString(&LCDD1, txt_position, 40);
@@ -243,8 +256,11 @@ AbstractState* SmartServoMoveState::onUiEvent(struct UiState ui_state) {
                 endless_direction = Dynamixel::Clockwise;
                 chsnprintf(txt_position, sizeof(txt_position), "Speed = %4d CW ", pos);
             }
-            // Dynamixel::turn(smartServoIDState.get_servo_id(), endless_direction, pos);
+            smartServoIDState.servo->turn(smartServoIDState.get_servo_id(), endless_direction, pos);
             lcdWriteString(&LCDD1, txt_position, 40);
+        }
+        else if(smartServoFnMenuState.get_function() == E_DynamixelSetTorque) {
+            smartServoIDState.servo->setTorque(smartServoIDState.get_servo_id(), pos*10);
         }
     }
 

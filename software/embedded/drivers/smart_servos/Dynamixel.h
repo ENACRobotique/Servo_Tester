@@ -9,11 +9,6 @@ class Dynamixel: public SmartServo {
 
 public:
 
-	enum RotationDirection{
-		Counterclockwise = 0,
-		Clockwise = 1
-	};
-
 	enum Baudrate {
 		BD_1M = 1,
 		BD_500K = 3,
@@ -28,13 +23,14 @@ public:
 
 	Dynamixel(SerialDriver* s): SmartServo(s) {}
 
-	SmartServo::Status setID(uint8_t id, uint8_t newID);
+	SmartServo::Status setID(uint8_t id, uint8_t newID) override;
 	SmartServo::Status setBaudrate(uint8_t id, uint32_t speed) override;
 
 	SmartServo::Status move(uint8_t id, uint16_t position, bool reg_write=false) override;
-	SmartServo::Status moveSpeed(uint8_t id, uint16_t position, uint16_t speed, bool reg_write=false);
-	SmartServo::Status setEndless(uint8_t id, bool status);
-	SmartServo::Status turn(uint8_t id, RotationDirection direction, uint16_t speed);
+	SmartServo::Status moveSpeed(uint8_t id, uint16_t position, uint16_t speed, bool reg_write=false) override;
+	SmartServo::Status setEndless(uint8_t id, bool status) override;
+	SmartServo::Status turn(uint8_t id, RotationDirection direction, uint16_t speed) override;
+	SmartServo::Status setTorque(uint8_t id, uint16_t torque) override;
 	
 
 
