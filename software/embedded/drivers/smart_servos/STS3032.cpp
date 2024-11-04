@@ -1,61 +1,96 @@
 #include "STS3032.h"
 
-namespace STS3032 {
+STS3032 sts3032(&SD1);
 
-SmartServo::Status writeRegisterEPROM(uint8_t id, uint8_t reg, uint8_t value)
+
+SmartServo::Status STS3032::writeRegisterEPROM(uint8_t id, uint8_t reg, uint8_t value)
 {
-    // ping ID
-    if(auto ret = smart_servo.ping(id)) {return ret;}
 
-    // Unlock EEPROM
-    if(auto ret=smart_servo.writeRegister(id, R_Lock, 0)) {return ret;}
+	writeRegister(id, R_Lock, 0);
+	writeRegister(id, reg, value);
+	writeRegister(id, R_Lock, 1);
 
-    // Write new ID
-    if(auto ret=smart_servo.writeRegister(id, reg, value)) {return ret;}
+    // // ping ID
+    // if(auto ret = ping(id)) {return ret;}
 
-    // Lock EEPROM
-    if(auto ret=smart_servo.writeRegister(id, R_Lock, 1)) {return ret;}
+    // // Unlock EEPROM
+    // if(auto ret=writeRegister(id, R_Lock, 0)) {return ret;}
+
+    // // Write new ID
+    // if(auto ret=writeRegister(id, reg, value)) {return ret;}
+
+    // // Lock EEPROM
+    // if(auto ret=writeRegister(id, R_Lock, 1)) {return ret;}
 
     return SmartServo::OK;
 
 }
 
-SmartServo::Status reset(uint8_t id)
-{
-    return smart_servo.reset(id);
-}
-
-SmartServo::Status ping(uint8_t id)
-{
-    return smart_servo.ping(id);
-}
-
-SmartServo::Status setID(uint8_t id, uint8_t newID){
+SmartServo::Status STS3032::setID(uint8_t id, uint8_t newID){
     // check if newID already in use
     if (id >= 0xFE || newID >= 0xFE) {return SmartServo::INVALID_PARAMS;}
 
     // ping current ID
-    if(auto ret = smart_servo.ping(id)) {return ret;}
+    if(auto ret = ping(id)) {return ret;}
 
     // Unlock EEPROM
-    if(auto ret=smart_servo.writeRegister(id, R_Lock, 0)) {return ret;}
+    if(auto ret=writeRegister(id, R_Lock, 0)) {return ret;}
 
     // Write new ID
-    if(auto ret=smart_servo.writeRegister(id, R_ServoID, newID)) {return ret;}
+    if(auto ret=writeRegister(id, R_ServoID, newID)) {return ret;}
 
     // Lock EEPROM
-    if(auto ret=smart_servo.writeRegister(newID, R_Lock, 1)) {return ret;}
+    if(auto ret=writeRegister(newID, R_Lock, 1)) {return ret;}
     
     // ping newID
     return ping(newID);
 }
 
+SmartServo::Status STS3032::setBaudrate(uint8_t id, uint32_t speed)
+{
+	Baudrate baud;
+	switch (speed)
+	{
+	case 1000000:
+		baud = BD_1M;
+		break;
+	case 500000:
+		baud = BD_500K;
+		break;
+	case 250000:
+		baud = BD_250K;
+		break;
+	case 128000:
+		baud = BD_128K;
+		break;
+	case 115200:
+		baud = BD_115200;
+		break;
+	case 76800:
+		baud = BD_76800;
+		break;
+	case 57600:
+		baud = BD_57600;
+		break;
+	case 38400:
+		baud = BD_38400;
+		break;
+	default:
+		baud = BD_500K;
+		speed = 500000;
+		break;
+	}
 
-SmartServo::Status setBD(uint8_t id, Baudrate baud){
-    return writeRegisterEPROM(id, R_BaudRate, (uint8_t)baud);
+	writeRegister(id, R_Lock, 0);
+	writeRegister(id, R_BaudRate, (uint8_t)baud);
+	SmartServo::setSerialBaudrate(speed);
+	SmartServo::Status status = writeRegister(id, R_Lock, 1);
+	
+	return status;
 }
 
-SmartServo::Status move(uint8_t id, uint16_t position, bool reg_write){
+
+SmartServo::Status STS3032::move(uint8_t id, uint16_t position, bool reg_write){
 	SmartServo::record_t rec = {
 		.id = id,
 		.reg = R_GoalPosition,
@@ -64,11 +99,11 @@ SmartServo::Status move(uint8_t id, uint16_t position, bool reg_write){
 	};
 	*(uint16_t*)rec.data = position;
 
-	return smart_servo.write(&rec, reg_write);
+	return write(&rec, reg_write);
 }
 
 
-int readPosition(uint8_t id){
+int STS3032::readPosition(uint8_t id){
 	SmartServo::record_t rec = {
 		.id = id,
 		.reg = R_CurrentPosition,
@@ -76,7 +111,7 @@ int readPosition(uint8_t id){
 		.data = {0}
 	};
 
-	if(smart_servo.read(&rec) == SmartServo::Status::OK) {
+	if(read(&rec) == SmartServo::Status::OK) {
 		return *(uint16_t*)rec.data;
 	} else {
 		return -1;
@@ -85,7 +120,7 @@ int readPosition(uint8_t id){
 
 
 
-int readResponseLevel(uint8_t id) {
+int STS3032::readResponseLevel(uint8_t id) {
     	SmartServo::record_t rec = {
 		.id = id,
 		.reg = R_ResponseStatusLevel,
@@ -93,15 +128,10 @@ int readResponseLevel(uint8_t id) {
 		.data = {0}
 	};
 
-	if(smart_servo.read(&rec) == SmartServo::Status::OK) {
-        uint8_t response_level = rec.data[0];
-        smart_servo.setResponseLevel(response_level);
+	if(read(&rec) == SmartServo::Status::OK) {
+		response_level = (ResponseLevel)rec.data[0];
 		return response_level;
 	} else {
 		return -1;
 	}
-}
-
-
-
 }

@@ -5,6 +5,17 @@
 constexpr size_t MAX_DATA_LEN = 10;
 constexpr uint8_t BROADCAST_ID = 254;
 
+constexpr size_t TX_BUF_LEN = 10*MAX_DATA_LEN;
+
+typedef struct __attribute__((packed)) {
+    uint16_t STX;
+    uint8_t id;
+    uint8_t len;
+    uint8_t instruction;        // or error for status packets
+    uint8_t params[TX_BUF_LEN+1];
+} servo_msg_t;
+
+
 class SmartServo {
 public:
 
@@ -34,15 +45,34 @@ public:
         ECHO_ERROR          = 1<<11,
     };
 
-    SmartServo(SerialDriver* s): sd(s), response_level(RL_NORMAL), timeout(TIME_MS2I(10)), echo_timeout(TIME_MS2I(2)){}
+    SmartServo(SerialDriver* s): response_level(RL_NORMAL), sd(s), timeout(TIME_MS2I(20)), echo_timeout(TIME_MS2I(2)){}
 
     void init();
-    void setBaudrate(uint32_t speed);
+
+    void setSerialBaudrate(uint32_t speed);
+    virtual SmartServo::Status setBaudrate(uint8_t id, uint32_t speed) = 0;
+
+    virtual SmartServo::Status move(uint8_t id, uint16_t position, bool reg_write=false) = 0;
+    virtual int readPosition(uint8_t id) = 0;
     
     /**
      * Send ping to servo.
      */
     Status ping(uint8_t id);
+
+    /**
+     * Reset servo to factorey default values
+     */
+    Status reset(uint8_t id);
+
+
+    servo_msg_t* getStatus() {return &servo_status;}
+
+    Status detectBaudrate();
+
+    // void setResponseLevel(uint8_t rl) {response_level = (ResponseLevel)rl;}
+
+protected:
 
     /**
      * Read @record.len bytes from servo @record.id, starting at address record.reg.
@@ -61,11 +91,6 @@ public:
     Status action(uint8_t id);
 
     /**
-     * Reset servo to factorey default values
-     */
-    Status reset(uint8_t id);
-
-    /**
      * Sync write: write to multiples servos with a single packet.
      * All records must share the same register address and the same data lenght.
      * Data can differ for each ID.
@@ -75,7 +100,12 @@ public:
     // Write one byte to register
     Status writeRegister(uint8_t id, uint8_t reg, uint8_t value);
 
-    void setResponseLevel(uint8_t rl) {response_level = (ResponseLevel)rl;}
+    enum ResponseLevel {
+        RL_SILENT = 0,
+        RL_NORMAL = 1,
+    };
+
+    enum ResponseLevel response_level;
 
 private:
 
@@ -96,15 +126,15 @@ private:
         //SMART_SERVO_BULK_READ = 0x92,
     };
 
-    enum ResponseLevel {
-        RL_SILENT = 0,
-        RL_NORMAL = 1,
-    };
+    
+
+
+
 
     SerialDriver* sd;
-    enum ResponseLevel response_level;
     sysinterval_t timeout;
     sysinterval_t echo_timeout;
-};
 
-extern SmartServo smart_servo;
+    servo_msg_t servo_msg;
+    servo_msg_t servo_status;
+};

@@ -11,6 +11,7 @@
 #include "SmartServoState.h"
 #include "CanState.h"
 #include "I2CState.h"
+#include "STS3032.h"
 
 MainMenuState mainMenuState = MainMenuState();
 
@@ -55,10 +56,10 @@ AbstractState* MainMenuState::onUiEvent(struct UiState ui_state) {
 		case MENU_SERVO:
 			return &servoState;
 		case MENU_DYNAMIXELS:
-			smartServoIDState.set_servo_type(S_Dynamixel);
+			smartServoIDState.set_servo(&dynamixel);
 			return &smartServoIDState;
 		case MENU_STS3032:
-			smartServoIDState.set_servo_type(S_STS3032);
+			smartServoIDState.set_servo(&sts3032);
 			return &smartServoIDState;
 		case MENU_I2C:
 			return &i2cState;

@@ -3,29 +3,16 @@
 #include <hal.h>
 #include "string.h"
 
-SmartServo smart_servo(&SD1);
 
-constexpr size_t TX_BUF_LEN = 10*MAX_DATA_LEN;
-
-typedef struct __attribute__((packed)) {
-    uint16_t STX;
-    uint8_t id;
-    uint8_t len;
-    uint8_t instruction;        // or error for status packets
-    uint8_t params[TX_BUF_LEN+1];
-} servo_msg_t;
-
-servo_msg_t servo_msg;
-servo_msg_t servo_status;
 
 static uint8_t compute_chk(servo_msg_t* msg);
 
 static void set_chk(servo_msg_t* msg, uint8_t chk) {
-    *((uint8_t*)msg + msg->len + 5) = chk;
+    *((uint8_t*)msg + msg->len + 3) = chk;
 }
 
 static void send_msg(SerialDriver* sd, servo_msg_t* msg) {
-    sdWrite(sd, (uint8_t*)msg, msg->len+6);
+    sdWrite(sd, (uint8_t*)msg, msg->len+4);
 }
 
 SerialConfig sdconf = {
@@ -42,15 +29,22 @@ SmartServo::Status SmartServo::readStatus()
     
     systime_t start = chVTGetSystemTimeX();
     systime_t elapsed = 0;
+    //timeout = chTimeMS2I(20);
 
     // sync on start bytes 0xFFFF
     servo_status.STX = 0;
+
     while(servo_status.STX != 0xFFFF) {
+        //uint8_t tmp = 0;
         servo_status.STX <<= 8;
-        n = sdReadTimeout(sd, (uint8_t*)&servo_status.STX, 1, timeout-elapsed);
+        n = sdReadTimeout(sd, (uint8_t*)&servo_status.STX, 1, timeout-elapsed); //timeout-elapsed
         elapsed = chVTTimeElapsedSinceX(start);
         if(n != 1 || elapsed >= timeout) { return Status::STATUS_TIMEOUT; }
     }
+
+    servo_status.id = 42;
+    servo_status.len = 42;
+    servo_status.instruction = 42;
 
     // Read ID, LEN, ERROR, and either CHK if there is not params, or the first byte of the params.
     n = sdReadTimeout(sd, (uint8_t*)&servo_status.id, 4, timeout-elapsed);
@@ -74,10 +68,10 @@ SmartServo::Status SmartServo::readStatus()
 
 SmartServo::Status SmartServo::readEcho()
 {
-    size_t n = sdReadTimeout(sd, (uint8_t*)&servo_status, servo_msg.len+6, timeout);
-    if (n != (size_t)(servo_msg.len+6)) { return Status::STATUS_TIMEOUT; }
+    size_t n = sdReadTimeout(sd, (uint8_t*)&servo_status, servo_msg.len+4, timeout);
+    if (n != (size_t)(servo_msg.len+4)) { return Status::STATUS_TIMEOUT; }
 
-    if(memcmp(&servo_msg, &servo_status, servo_msg.len+6) != 0) {
+    if(memcmp(&servo_msg, &servo_status, servo_msg.len+4) != 0) {
         return Status::ECHO_ERROR;
     }
 
@@ -94,7 +88,7 @@ void SmartServo::init()
     sdStart(sd, &sdconf);
 }
 
-void SmartServo::setBaudrate(uint32_t speed)
+void SmartServo::setSerialBaudrate(uint32_t speed)
 {
     sdStop(sd);
     sdconf.speed = speed;
@@ -113,7 +107,7 @@ SmartServo::Status SmartServo::ping(uint8_t id)
     send_msg(sd, &servo_msg);
     readEcho();
 
-    return id != BROADCAST_ID ? readStatus(): Status::OK;
+    return readStatus();
 }
 
 SmartServo::Status SmartServo::read(record_t *record) {
@@ -188,6 +182,18 @@ SmartServo::Status SmartServo::reset(uint8_t id) {
     return response_level == RL_NORMAL ? readStatus(): Status::OK;
 }
 
+SmartServo::Status SmartServo::detectBaudrate()
+{
+    uint32_t baudrates[] = {1000000, 500000, 250000};
+    for(auto baud: baudrates) {
+        setSerialBaudrate(baud);
+        if(ping(BROADCAST_ID) == SmartServo::OK) {
+            return SmartServo::OK;
+        }
+    }
+    return Status::STATUS_TIMEOUT;
+}
+
 SmartServo::Status SmartServo::sync_write(record_t *records, size_t nb_records) {
     if(nb_records < 1) {
         return Status::INVALID_PARAMS;
@@ -238,7 +244,7 @@ SmartServo::Status SmartServo::writeRegister(uint8_t id, uint8_t reg, uint8_t va
 		.data = {value}
 	};
 
-	return smart_servo.write(&rec);
+	return write(&rec);
 }
 
 static uint8_t compute_chk(servo_msg_t* msg) {

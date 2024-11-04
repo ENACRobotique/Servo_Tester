@@ -1,8 +1,10 @@
 #pragma once
 #include "smart_servo.h"
 
-namespace STS3032 {
-    
+class STS3032: public SmartServo {
+
+public:
+
     enum Baudrate {
 		BD_1M = 0,
 		BD_500K = 1,
@@ -14,24 +16,26 @@ namespace STS3032 {
 		BD_38400 = 7    // 38461.5
 	};
 
+    STS3032(SerialDriver* s): SmartServo(s) {}
+
+    SmartServo::Status setBaudrate(uint8_t id, uint32_t speed) override;
+    
     SmartServo::Status writeRegisterEPROM(uint8_t id, uint8_t reg, uint8_t value);
 
-    SmartServo::Status reset(uint8_t id);
-	SmartServo::Status ping(uint8_t id);
-
 	SmartServo::Status setID(uint8_t id, uint8_t newID);
-	SmartServo::Status setBD(uint8_t id, Baudrate baud);
 
-	SmartServo::Status move(uint8_t id, uint16_t position, bool reg_write=false);
+	SmartServo::Status move(uint8_t id, uint16_t position, bool reg_write=false) override;
 	SmartServo::Status moveSpeed(uint8_t id, uint16_t position, uint16_t speed, bool reg_write=false);
 	SmartServo::Status setEndless(uint8_t id, bool status);
 	//SmartServo::Status turn(uint8_t id, RotationDirection direction, uint16_t speed);
 	
 
-    int readPosition(uint8_t id);
+    int readPosition(uint8_t id) override;
 
     // Read response level and update smart_servo accordingly.
     int readResponseLevel(uint8_t id);
+
+private:
 
     enum eRegister {
         //-------EPROM--------
@@ -178,4 +182,6 @@ namespace STS3032 {
         R_CurrentCurrent = 0x45,
     };
 
-}
+};
+
+extern STS3032 sts3032;

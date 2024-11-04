@@ -21,6 +21,7 @@ enum SmartServoType {
 };
 
 class SmartServoFnMenuState;
+class SmartServoMoveState;
 
 class SmartServoIDState : public AbstractState {
 public:
@@ -38,7 +39,7 @@ public:
         smart_servo_id = new_id;
     }
 
-    void set_servo_type(enum SmartServoType type) {servo_type = type;}
+    void set_servo(SmartServo* s);
 
 private:
     int32_t pos_enc_init;
@@ -46,7 +47,12 @@ private:
     uint8_t smart_servo_id;
     enum SmartServoType servo_type;
 
+    SmartServo* servo;
+    const char** servo_txt;
+    const char** servo_txt_short;
+
     friend SmartServoFnMenuState;
+    friend SmartServoMoveState;
 
 };
 

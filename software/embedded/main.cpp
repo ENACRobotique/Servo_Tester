@@ -13,7 +13,8 @@ extern "C" {
 #include "ttyConsole.h"
 #include "ui.h"
 #include "StateMachine/StateManager.h"
-#include "smart_servo.h"
+#include "Dynamixel.h"
+#include "STS3032.h"
 
 
 static THD_WORKING_AREA(waUiStateMachine, 500);
@@ -43,7 +44,9 @@ int main(void) {
   init_I2C();
   init_CAN();
   init_ui();
-  smart_servo.init();
+
+  dynamixel.init();
+  //sts3032.init() will do the same thing
 
   stateManager.init();
 

@@ -7,17 +7,9 @@
 
 #define NO_OP asm("NOP")//__asm nop
 
-namespace Dynamixel {
-	
-SmartServo::Status reset(uint8_t id){
-	return smart_servo.reset(id);
-}
+Dynamixel dynamixel(&SD1);
 
-SmartServo::Status ping(uint8_t id){
-	return smart_servo.ping(id);
-}
-
-SmartServo::Status setID(uint8_t id, uint8_t newID){
+SmartServo::Status Dynamixel::setID(uint8_t id, uint8_t newID){
 	SmartServo::record_t rec = {
 		.id = id,
 		.reg = R_ServoID,
@@ -25,23 +17,20 @@ SmartServo::Status setID(uint8_t id, uint8_t newID){
 		.data = {newID}
 	};
 
-	return smart_servo.write(&rec);
+	return write(&rec);
 }
 
-SmartServo::Status setBD(uint8_t id, long baud){
-	uint8_t baud_rate = (2000000/baud) - 1;
 
-	SmartServo::record_t rec = {
-		.id = id,
-		.reg = R_BaudRate,
-		.len = 1,
-		.data = {baud_rate}
-	};
-
-	return smart_servo.write(&rec);
+SmartServo::Status Dynamixel::setBaudrate(uint8_t id, uint32_t speed)
+{
+	uint8_t baud = (2000000/speed) - 1;
+    SmartServo::Status status = writeRegister(id, R_BaudRate, (uint8_t)baud);
+	SmartServo::setSerialBaudrate(speed);
+	return status;
 }
 
-SmartServo::Status move(uint8_t id, uint16_t position, bool reg_write){
+
+SmartServo::Status Dynamixel::move(uint8_t id, uint16_t position, bool reg_write){
 	SmartServo::record_t rec = {
 		.id = id,
 		.reg = R_GoalPosition,
@@ -51,10 +40,10 @@ SmartServo::Status move(uint8_t id, uint16_t position, bool reg_write){
 	};
 	*(uint16_t*)rec.data = position;
 
-	return smart_servo.write(&rec, reg_write);
+	return write(&rec, reg_write);
 }
 
-SmartServo::Status moveSpeed(uint8_t id, uint16_t position, uint16_t speed, bool reg_write){
+SmartServo::Status Dynamixel::moveSpeed(uint8_t id, uint16_t position, uint16_t speed, bool reg_write){
 	SmartServo::record_t rec = {
 		.id = id,
 		.reg = R_GoalPosition,
@@ -65,10 +54,10 @@ SmartServo::Status moveSpeed(uint8_t id, uint16_t position, uint16_t speed, bool
 	*(uint16_t*)rec.data = position;
 	*((uint16_t*)rec.data + 1 )= speed;
 
-	return smart_servo.write(&rec, reg_write);
+	return write(&rec, reg_write);
 }
 
-SmartServo::Status setEndless(uint8_t id, bool status){
+SmartServo::Status Dynamixel::setEndless(uint8_t id, bool status){
 	SmartServo::record_t rec = {
 		.id = id,
 		.reg = R_CCW_AngleLimit,
@@ -81,10 +70,10 @@ SmartServo::Status setEndless(uint8_t id, bool status){
 		*(uint16_t*)rec.data = 1023;
 	}
 
-	return smart_servo.write(&rec);
+	return write(&rec);
 }
 
-SmartServo::Status turn(uint8_t id, RotationDirection direction, uint16_t speed){
+SmartServo::Status Dynamixel::turn(uint8_t id, RotationDirection direction, uint16_t speed){
 	SmartServo::record_t rec = {
 		.id = id,
 		.reg = R_MovingSpeed,
@@ -93,7 +82,7 @@ SmartServo::Status turn(uint8_t id, RotationDirection direction, uint16_t speed)
 	};
 	*(uint16_t*)rec.data = speed | ((int)direction) << 10;
 
-	return smart_servo.write(&rec);
+	return write(&rec);
 }
 
 
@@ -136,7 +125,7 @@ SmartServo::Status turn(uint8_t id, RotationDirection direction, uint16_t speed)
 // 	return -1;
 // }
 
-int readPosition(uint8_t id){
+int Dynamixel::readPosition(uint8_t id){
 	SmartServo::record_t rec = {
 		.id = id,
 		.reg = R_PresentPosition,
@@ -144,7 +133,7 @@ int readPosition(uint8_t id){
 		.data = {0}
 	};
 
-	if(smart_servo.read(&rec) == SmartServo::Status::OK) {
+	if(read(&rec) == SmartServo::Status::OK) {
 		return *(uint16_t*)rec.data;
 	} else {
 		return -1;
@@ -318,7 +307,3 @@ int readPosition(uint8_t id){
 // 	return -1;
 // }
 
-
-
-
-}

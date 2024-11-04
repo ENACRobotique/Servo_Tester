@@ -1,11 +1,13 @@
 #pragma once
 
 // #include <ch.h>
-// #include <hal.h>
+#include <hal.h>
 #include "smart_servo.h"
 
 
-namespace Dynamixel{
+class Dynamixel: public SmartServo {
+
+public:
 
 	enum RotationDirection{
 		Counterclockwise = 0,
@@ -24,14 +26,12 @@ namespace Dynamixel{
 		BD_9600 = 207
 	};
 
-
-	SmartServo::Status reset(uint8_t id);
-	SmartServo::Status ping(uint8_t id);
+	Dynamixel(SerialDriver* s): SmartServo(s) {}
 
 	SmartServo::Status setID(uint8_t id, uint8_t newID);
-	SmartServo::Status setBD(uint8_t id, long baud);
+	SmartServo::Status setBaudrate(uint8_t id, uint32_t speed) override;
 
-	SmartServo::Status move(uint8_t id, uint16_t position, bool reg_write=false);
+	SmartServo::Status move(uint8_t id, uint16_t position, bool reg_write=false) override;
 	SmartServo::Status moveSpeed(uint8_t id, uint16_t position, uint16_t speed, bool reg_write=false);
 	SmartServo::Status setEndless(uint8_t id, bool status);
 	SmartServo::Status turn(uint8_t id, RotationDirection direction, uint16_t speed);
@@ -52,7 +52,7 @@ namespace Dynamixel{
 	// SmartServo::Status setPunch(uint8_t id, int punch);
 
 	
-	int readPosition(uint8_t id);
+	int readPosition(uint8_t id) override;
 
 
 	// int moving(uint8_t id);
@@ -66,6 +66,7 @@ namespace Dynamixel{
 	// int ledStatus(uint8_t id, bool status);
 
 
+private:
 	// The Dynamixel registers
 	enum eRegister
 	{
@@ -111,3 +112,4 @@ namespace Dynamixel{
 
 };
 
+extern Dynamixel dynamixel;
