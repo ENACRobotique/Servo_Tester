@@ -31,6 +31,8 @@ public:
 	SmartServo::Status setEndless(uint8_t id, bool status) override;
 	SmartServo::Status turn(uint8_t id, RotationDirection direction, uint16_t speed) override;
 	SmartServo::Status setTorque(uint8_t id, uint16_t torque) override;
+	SmartServo::Status torqueEnable(uint8_t id, bool enable) override;
+	SmartServo::Status setLimits(uint8_t id, uint16_t minAngle, uint16_t maxAngle) override;
 	
 
 

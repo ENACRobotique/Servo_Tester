@@ -20,7 +20,6 @@ public:
 
     SmartServo::Status setBaudrate(uint8_t id, uint32_t speed) override;
     
-    SmartServo::Status writeRegisterEPROM(uint8_t id, uint8_t reg, uint8_t value);
 
 	SmartServo::Status setID(uint8_t id, uint8_t newID) override;
 
@@ -29,6 +28,16 @@ public:
 	SmartServo::Status setEndless(uint8_t id, bool status) override;
     SmartServo::Status turn(uint8_t id, RotationDirection direction, uint16_t speed) override;
 	SmartServo::Status setTorque(uint8_t id, uint16_t torque) override;
+    SmartServo::Status torqueEnable(uint8_t id, bool enable) override;
+    SmartServo::Status setLimits(uint8_t id, uint16_t minAngle, uint16_t maxAngle) override;
+    SmartServo::Status setResolution(uint8_t id, uint8_t resolution);
+
+    SmartServo::Status setMultiturn(uint8_t id, uint8_t factor);
+    
+    // true for locking, false for unlocking
+    SmartServo::Status lock_eprom(uint8_t id, bool lock);
+
+    
 	
 
     int readPosition(uint8_t id) override;
@@ -37,6 +46,7 @@ public:
     int readResponseLevel(uint8_t id);
 
 private:
+    SmartServo::Status writeRegisterEPROM(uint8_t id, uint8_t reg, uint8_t value);
 
     enum eRegister {
         //-------EPROM--------

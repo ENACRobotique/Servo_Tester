@@ -156,6 +156,57 @@ SmartServo::Status STS3032::setTorque(uint8_t id, uint16_t torque)
 	return write(&rec);
 }
 
+SmartServo::Status STS3032::setLimits(uint8_t id, uint16_t minAngle, uint16_t maxAngle)
+{
+	SmartServo::record_t rec = {
+		.id = id,
+		.reg = R_MinAngleLimit,
+		.len = 4,
+		.data = {0}
+	};
+	((uint16_t*)rec.data)[0] = minAngle;
+	((uint16_t*)rec.data)[1] = maxAngle;
+
+	return write(&rec);
+}
+
+SmartServo::Status STS3032::setResolution(uint8_t id, uint8_t resolution)
+{
+	resolution = MIN(resolution, 100);
+    SmartServo::record_t rec = {
+		.id = id,
+		.reg = R_AngularResolution,
+		.len = 1,
+		.data = {resolution}
+	};
+
+	return write(&rec);
+}
+
+SmartServo::Status STS3032::setMultiturn(uint8_t id, uint8_t factor)
+{
+	factor = MIN(factor, 100);
+
+	if(factor == 1) {
+		setLimits(id, 0, 4095);
+	} else {
+		setLimits(id, 0, 0);
+	}
+
+	return setResolution(id, factor);
+}
+
+SmartServo::Status STS3032::lock_eprom(uint8_t id, bool lock)
+{
+    return writeRegister(id, R_Lock, (uint8_t)lock);
+}
+
+SmartServo::Status STS3032::torqueEnable(uint8_t id, bool enable)
+{
+    return writeRegister(id, R_TorqueEnable, (uint8_t)enable);
+}
+
+
 int STS3032::readPosition(uint8_t id){
 	SmartServo::record_t rec = {
 		.id = id,

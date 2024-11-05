@@ -16,7 +16,7 @@ static void send_msg(SerialDriver* sd, servo_msg_t* msg) {
 }
 
 SerialConfig sdconf = {
-		.speed = 1000000,
+		.speed = 250000,
 		.cr1 = 0,
 		.cr2 = USART_CR2_STOP1_BITS,
 		.cr3 = USART_CR3_HDSEL

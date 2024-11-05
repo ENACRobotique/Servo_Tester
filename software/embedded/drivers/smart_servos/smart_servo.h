@@ -62,6 +62,9 @@ public:
     virtual SmartServo::Status setEndless(uint8_t id, bool status) = 0;
     virtual SmartServo::Status turn(uint8_t id, RotationDirection direction, uint16_t speed) = 0;
     virtual SmartServo::Status setTorque(uint8_t id, uint16_t torque) = 0;
+    virtual SmartServo::Status torqueEnable(uint8_t id, bool enable) = 0;
+    virtual SmartServo::Status setLimits(uint8_t id, uint16_t minAngle, uint16_t maxAngle) = 0;
+
     virtual int readPosition(uint8_t id) = 0;
     
     /**

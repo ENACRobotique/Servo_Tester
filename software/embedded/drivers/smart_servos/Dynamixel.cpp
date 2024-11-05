@@ -98,6 +98,25 @@ SmartServo::Status Dynamixel::setTorque(uint8_t id, uint16_t torque)
 	return write(&rec);
 }
 
+SmartServo::Status Dynamixel::torqueEnable(uint8_t id, bool enable)
+{
+    return writeRegister(id, R_TorqueEnable, (uint8_t)enable);
+}
+
+SmartServo::Status Dynamixel::setLimits(uint8_t id, uint16_t minAngle, uint16_t maxAngle)
+{
+    	SmartServo::record_t rec = {
+		.id = id,
+		.reg = R_CW_AngleLimit,
+		.len = 4,
+		.data = {0}
+	};
+	((uint16_t*)rec.data)[0] = minAngle;
+	((uint16_t*)rec.data)[1] = maxAngle;
+
+	return write(&rec);
+}
+
 // SmartServo::Status DynamixelSerial::moveSpeedRW(uint8_t id, int position, int speed){
 // 	uint8_t data[5];
 // 	data[0] = R_GoalPosition;
@@ -181,17 +200,6 @@ int Dynamixel::readPosition(uint8_t id){
 // 	return readResponse(nullptr);
 // }
 
-// int DynamixelSerial::setAngleLimit(uint8_t id, int CWLimit, int CCWLimit){
-// 	uint8_t data[6];
-// 	data[0] = R_CW_AngleLimit;
-// 	data[1] = CWLimit & 0xFF;
-// 	data[2] = (CWLimit >> 8) & 0xFF;
-// 	data[3] = R_CCW_AngleLimit;
-// 	data[4] = CCWLimit & 0xFF;
-// 	data[5] = (CCWLimit >> 8) & 0xFF;
-// 	sendInstruction(ID, I_WriteData, data, sizeof(data));
-// 	return readResponse(nullptr);
-// }
 
 // int DynamixelSerial::setMaxTorque(uint8_t id, int maxTorque){
 // 	uint8_t data[3];
