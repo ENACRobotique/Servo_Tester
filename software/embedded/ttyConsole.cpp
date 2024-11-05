@@ -12,6 +12,8 @@
 #include "portage.h"
 #include "servos.h"
 #include "SmartServoState.h"
+#include "Dynamixel.h"
+#include "STS3032.h"
 
 
 /*===========================================================================*/
@@ -29,6 +31,7 @@ static void cmd_bkp (BaseSequentialStream *lchp, int argc,const char * const arg
 static void cmd_conf (BaseSequentialStream *lchp, int argc,const char * const argv[]);
 static void cmd_servo (BaseSequentialStream *lchp, int argc,const char * const argv[]);
 static void cmd_dynamixel (BaseSequentialStream *lchp, int argc,const char * const argv[]);
+static void cmd_sts3032 (BaseSequentialStream *lchp, int argc,const char * const argv[]);
 
 static const ShellCommand commands[] = {
   {"mem", cmd_mem},
@@ -41,6 +44,7 @@ static const ShellCommand commands[] = {
   {"conf", cmd_conf},
   {"servo", cmd_servo},
   {"dyn", cmd_dynamixel},
+  {"sts", cmd_sts3032},
   {NULL, NULL}
 };
 
@@ -58,26 +62,145 @@ static void cmd_servo(BaseSequentialStream *lchp, int argc,const char * const ar
   set_servo(no_servo, us);
 }
 
-static void cmd_dynamixel(BaseSequentialStream *lchp, int argc,const char * const argv[]) {
-  if(argc < 2) {
-	  chprintf (lchp, "Usage : >dyn 1 512 [200]\r\n");
+static void print_smart_servo_help(BaseSequentialStream *lchp, bool is_sts) {
+  if(is_sts) {
+    chprintf (lchp, "Usage: sts <id> <command> <args>\r\n");
+  } else {
+    chprintf (lchp, "Usage: dyn <id> <command> <args>\r\n");
+  }
+  chprintf (lchp, "commands:\r\n");
+  chprintf (lchp, "    set_id <new_id>\r\n");
+  chprintf (lchp, "    ping\r\n");
+  chprintf (lchp, "    reset\r\n");
+  chprintf (lchp, "    move <pos>\r\n");
+  chprintf (lchp, "    move_speed <pos> <speed>\r\n");
+  chprintf (lchp, "    set_torque <torque>\r\n");
+  chprintf (lchp, "    torque_en <enable>   // enable(1) / disable(0) torque\r\n");
+  chprintf (lchp, "    set_limits <min> <max>\r\n");
+  if(is_sts) {
+    chprintf (lchp, "    unlock   // unlock EPROM\r\n");
+    chprintf (lchp, "    lock     // lock EPROM\r\n");
+    chprintf (lchp, "    set_res <resolution>\r\n");
+  }
+}
+
+// returns 0 if the command has been recognized, else 1
+static int smart_servo_common(BaseSequentialStream *lchp, int argc, const char * const argv[], SmartServo* servo, uint8_t sid) {
+  (void)argc;
+  if(argc == 3 && !memcmp(argv[1], "set_id", 6)) {
+    int new_id;
+    if(sscanf(argv[2], "%d", &new_id)!=1) {return -1;}
+    if(servo->setID(sid, new_id) == SmartServo::OK) {
+      chprintf (lchp, "ID set to %d\r\n", new_id);
+    } else {
+      chprintf (lchp, "Error!\r\n");
+    }
+    return 0;
+  } else if(argc == 2 && !memcmp(argv[1], "ping", 4)) {
+    if(servo->ping(sid) == SmartServo::OK) {
+      chprintf (lchp, "Pong from %d\r\n", servo->getStatus()->id);
+    } else {
+      chprintf (lchp, "Ping timeout\r\n");
+    }
+    return 0;
+  } else if(argc == 2 && !memcmp(argv[1], "reset", 5)) {
+    servo->reset(sid);
+    return 0;
+  } else if(argc == 3 && !memcmp(argv[1], "move", 4)) {
+    int pos;
+    if(sscanf(argv[2], "%d", &pos)!=1) {return -1;}
+    chprintf (lchp, "Move servo %d to %d\r\n", sid, pos);
+    servo->move(sid, pos);
+    return 0;
+  } else if(argc == 4 && !memcmp(argv[1], "move_speed", 10)) {
+    int pos;
+    int speed;
+    if(sscanf(argv[2], "%d", &pos)!=1) {return -1;}
+    if(sscanf(argv[3], "%d", &speed)!=1) {return -1;}
+    chprintf (lchp, "Move servo %d to %d with speed %d\r\n", sid, pos, speed);
+    servo->moveSpeed(sid, pos, speed);
+    return 0;
+  } else if(argc == 3 && !memcmp(argv[1], "set_torque", 10)) {
+    int torque;
+    if(sscanf(argv[2], "%d", &torque)!=1) {return -1;}
+    chprintf (lchp, "Set servo %d torque to %d\r\n", sid, torque);
+    servo->setTorque(sid, torque);
+    return 0;
+  } else if(argc == 3 && !memcmp(argv[1], "torque_en", 9)) {
+    int enable;
+    if(sscanf(argv[2], "%d", &enable)!=1) {return -1;}
+    servo->torqueEnable(sid, enable);
+    if(enable) {
+      chprintf (lchp, "Enable servo %d.\r\n", sid);
+    } else {
+      chprintf (lchp, "Disable servo %d.\r\n", sid);
+    }
+    return 0;
+  } else if(argc == 4 && !memcmp(argv[1], "set_limits", 10)) {
+    uint16_t min_angle;
+    uint16_t max_angle;
+    if(sscanf(argv[2], "%hu", &min_angle)!=1) {return -1;}
+    if(sscanf(argv[3], "%hu", &max_angle)!=1) {return -1;}
+    chprintf (lchp, "Set servo %d limits: [%u - %u]\r\n", sid, min_angle, max_angle);
+    servo->setLimits(sid, min_angle, max_angle);
+    return 0;
+  }
+  return 1;
+}
+
+static void cmd_sts3032(BaseSequentialStream *lchp, int argc,const char * const argv[]) {
+  if(argc < 1) {
+    print_smart_servo_help(lchp, true);
 	  return;
   }
-  int dyn_id;
-  int pos;
-  sscanf(argv[0], "%d", &dyn_id);
-  sscanf(argv[1], "%d", &pos);
-  if(argc == 2) {
-    chprintf (lchp, "Set dynamixel %d to %d\r\n", dyn_id, pos);
-    //dyn.move(dyn_id, pos);
-  } else if(argc == 3) {
-    int speed;
-    sscanf(argv[2], "%d", &speed);
-    chprintf (lchp, "Set dynamixel %d to %d with speed %d\r\n", dyn_id, pos, speed);
-    //dyn.moveSpeed(dyn_id, pos, speed);
+
+  int sid;
+  if(sscanf(argv[0], "%d", &sid)!=1) {
+    chprintf (lchp, "Parse error!\r\n");
+    return;
   }
-  
-  
+
+  int ret = smart_servo_common(lchp, argc, argv, &sts3032, sid);
+  if(ret == -1) {
+    chprintf (lchp, "Parse error!\r\n");
+  } else if(ret == 1) {
+    if(!memcmp(argv[1], "unlock", 6)) {
+      sts3032.lock_eprom(sid, false);
+      chprintf (lchp, "Servo %d EPROM unlocked.\r\n", sid);
+    } else if(!memcmp(argv[1], "lock", 4)) {
+      sts3032.lock_eprom(sid, true);
+      chprintf (lchp, "Servo %d EPROM locked.\r\n", sid);
+    } else if(!memcmp(argv[1], "set_res", 7)) {
+      uint8_t resolution;
+      if(sscanf(argv[2], "%hhu", &resolution)==1) {
+        sts3032.setResolution(sid, resolution);
+      } else {
+        chprintf (lchp, "Parse error!\r\n");
+      }
+    } else {
+      chprintf (lchp, "Unknown command!\r\n");
+    }
+  }
+}
+
+static void cmd_dynamixel(BaseSequentialStream *lchp, int argc,const char * const argv[]) {
+    if(argc < 1) {
+    print_smart_servo_help(lchp, false);
+	  return;
+  }
+
+  int sid;
+  if(sscanf(argv[0], "%d", &sid)!=1) {
+    chprintf (lchp, "Parse error!\r\n");
+    return;
+  }
+
+  int ret = smart_servo_common(lchp, argc, argv, &dynamixel, sid);
+  if(ret == -1) {
+    chprintf (lchp, "Parse error!\r\n");
+  } else if(ret == 1) {
+    chprintf (lchp, "Unknown command!\r\n");
+  }
 }
 
 /*===========================================================================*/
