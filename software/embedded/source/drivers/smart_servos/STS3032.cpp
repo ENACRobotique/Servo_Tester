@@ -1,4 +1,5 @@
 #include "STS3032.h"
+#include "stdutil.h"
 
 STS3032 sts3032(&SD1);
 

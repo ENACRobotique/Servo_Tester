@@ -111,12 +111,12 @@ endif
 
 # Define project name here
 PROJECT = testeur
-BOARD = NUCLEO432
 
 # Imported source files and paths
 CHIBISTUDIO=/home/fabien/CHIBISTUDIO
 MY_DIRNAME=$(CHIBISTUDIO)/ChibiOS_stable
 
+CFG = ./cfg
 CHIBIOS = ./chibios_svn_mirror
 #STMSRC = $(CHIBISTUDIO)/COMMON/stm
 VARIOUS = ./chibios_enac_various_common
@@ -132,11 +132,13 @@ include $(CHIBIOS)/os/common/startup/ARMCMx/compilers/GCC/mk/startup_stm32l4xx.m
 # HAL-OSAL files (optional).
 include $(CHIBIOS)/os/hal/hal.mk
 include $(CHIBIOS)/os/hal/ports/STM32/STM32L4xx/platform_l432.mk
-include local/$(BOARD)/board.mk
+include $(CFG)/board.mk
 include $(CHIBIOS)/os/hal/osal/rt/osal.mk
 # RTOS files (optional).
 include $(CHIBIOS)/os/rt/rt.mk
 include $(CHIBIOS)/os/common/ports/ARMCMx/compilers/GCC/mk/port_v7m.mk
+# Auto-build files in ./source recursively.
+include $(CHIBIOS)/tools/mk/autobuild.mk
 # Other files (optional).
 
 
@@ -152,34 +154,17 @@ CSRC += $(STARTUPSRC) \
        $(HALSRC) \
        $(PLATFORMSRC) \
        $(BOARDSRC) \
+			 $(AUTOCSRC) \
        $(CHIBIOS)/os/various/syscalls.c \
        $(VARIOUS)/stdutil.c \
        $(VARIOUS)/printf.c \
        $(VARIOUS)/microrl/microrlShell.c \
-       $(VARIOUS)/microrl/microrl.c \
-       globalVar.c
-
-CSRC += ./userlib/src/lcd.c \
-        ./userlib/src/servos.c \
-        drivers/i2c/srf02.c \
-        hardware_config.c
+       $(VARIOUS)/microrl/microrl.c
 
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
-CPPSRC += drivers/smart_servos/Dynamixel.cpp \
-          StateMachine/AbstractState.cpp \
-          StateMachine/ui.cpp \
-          StateMachine/MainMenuState.cpp \
-          StateMachine/ServoState.cpp \
-          StateMachine/CanState.cpp \
-          StateMachine/SmartServoState.cpp \
-          StateMachine/I2CState.cpp \
-          StateMachine/StateManager.cpp \
-          VL6180x.cpp \
-          drivers/smart_servos/smart_servo.cpp \
-          ttyConsole.cpp \
-          main.cpp
+CPPSRC += $(AUTOCPPSRC)
 
 # C sources to be compiled in ARM mode regardless of the global setting.
 # NOTE: Mixing ARM and THUMB mode enables the -mthumb-interwork compiler
@@ -210,11 +195,7 @@ INCDIR += $(CHIBIOS)/os/license \
          $(HALINC) $(PLATFORMINC) $(BOARDINC) $(TESTINC) \
          $(CHIBIOS)/os/various $(VARIOUS)
 
-INCDIR += ./userlib/include/ \
-          StateMachine/ \
-          drivers/dynamixel \
-          drivers/i2c \
-          drivers/smart_servos
+INCDIR += $(AUTOINC)
 
 #
 # Project, sources and paths
@@ -284,10 +265,10 @@ ULIBS =
 
 RULESPATH = $(CHIBIOS)/os/common/startup/ARMCMx/compilers/GCC
 include $(RULESPATH)/rules.mk
-$(OBJS): local/$(BOARD)/board.h
+$(OBJS): $(CFG)/board.h
 
 
-local/$(BOARD)/board.h: local/$(BOARD)/board.cfg Makefile
+$(CFG)/board.h: $(CFG)/board.cfg Makefile
 	$(BOARDGEN) --no-pp-pin --no-pp-line --no-adcp-in	$<  $@
 
 stflash: all

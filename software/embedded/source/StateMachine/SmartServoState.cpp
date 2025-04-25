@@ -5,7 +5,7 @@
 #include "MainMenuState.h"
 #include "stdutil.h"
 #include "smart_servo.h"
-#include "STS3032.cpp"
+#include "STS3032.h"
 
 
 SmartServoIDState smartServoIDState = SmartServoIDState();

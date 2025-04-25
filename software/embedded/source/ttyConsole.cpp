@@ -32,8 +32,14 @@ static void cmd_conf (BaseSequentialStream *lchp, int argc,const char * const ar
 static void cmd_servo (BaseSequentialStream *lchp, int argc,const char * const argv[]);
 static void cmd_dynamixel (BaseSequentialStream *lchp, int argc,const char * const argv[]);
 static void cmd_sts3032 (BaseSequentialStream *lchp, int argc,const char * const argv[]);
+static void cmd_help (BaseSequentialStream *lchp, int argc,const char * const argv[]);
 
 static const ShellCommand commands[] = {
+  {"help", cmd_help},
+  {"servo", cmd_servo},
+  {"dyn", cmd_dynamixel},
+  {"sts", cmd_sts3032},
+
   {"mem", cmd_mem},
 #if CH_DBG_THREADS_PROFILING
   {"threads", cmd_threads},
@@ -42,9 +48,6 @@ static const ShellCommand commands[] = {
   {"shutdown", cmd_shutdown},
   {"bkp", cmd_bkp},
   {"conf", cmd_conf},
-  {"servo", cmd_servo},
-  {"dyn", cmd_dynamixel},
-  {"sts", cmd_sts3032},
   {NULL, NULL}
 };
 
@@ -77,6 +80,8 @@ static void print_smart_servo_help(BaseSequentialStream *lchp, bool is_sts) {
   chprintf (lchp, "    set_torque <torque>\r\n");
   chprintf (lchp, "    torque_en <enable>   // enable(1) / disable(0) torque\r\n");
   chprintf (lchp, "    set_limits <min> <max>\r\n");
+  chprintf (lchp, "    baud <baudrate>\r\n");
+  chprintf (lchp, "    set_baud <baudrate>\r\n");
   if(is_sts) {
     chprintf (lchp, "    unlock   // unlock EPROM\r\n");
     chprintf (lchp, "    lock     // lock EPROM\r\n");
@@ -145,6 +150,17 @@ static int smart_servo_common(BaseSequentialStream *lchp, int argc, const char *
     servo->setLimits(sid, min_angle, max_angle);
     return 0;
   }
+  else if(argc == 3 && !memcmp(argv[1], "baud", 4)) {
+    int baud;
+    if(sscanf(argv[2], "%d", &baud)!=1) {return -1;}
+    servo->setSerialBaudrate(baud);
+    return 0;
+  } else if(argc == 3 && !memcmp(argv[1], "set_baud", 8)) {
+    int baud;
+    if(sscanf(argv[2], "%d", &baud)!=1) {return -1;}
+    servo->setBaudrate(sid, baud);
+    return 0;
+  }
   return 1;
 }
 
@@ -201,6 +217,17 @@ static void cmd_dynamixel(BaseSequentialStream *lchp, int argc,const char * cons
   } else if(ret == 1) {
     chprintf (lchp, "Unknown command!\r\n");
   }
+}
+
+static void cmd_help(BaseSequentialStream *lchp, int argc,const char * const argv[]) {
+  (void)argc;
+  (void)argv;
+  chprintf (lchp, "Commands:\r\n");
+  //for(auto cmd: commands) {
+  for(int i=0; commands[i].sc_function!=nullptr; i++) {
+    chprintf (lchp, "  %s\r\n", commands[i].sc_name);
+  }
+  
 }
 
 /*===========================================================================*/
