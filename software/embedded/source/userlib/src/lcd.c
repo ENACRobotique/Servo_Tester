@@ -117,7 +117,7 @@ uint8_t pca9554_read(uint8_t reg) {
 	i2cMasterTransmitTimeout(&I2CD1,
 		0X20, &reg, 1,
 		&read, 1,
-		10);
+		chTimeMS2I(10));
 	return read;
 
 }
@@ -127,7 +127,7 @@ msg_t pca9554_write(uint8_t reg, uint8_t data) {
 	msg_t ret = i2cMasterTransmitTimeout(&I2CD1,
 			0X20, bytes, 2,
 			NULL, 0,
-			10);
+			chTimeMS2I(10));
 	return ret;
 }
 

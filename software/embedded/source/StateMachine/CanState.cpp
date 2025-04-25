@@ -105,7 +105,7 @@ AbstractState* CANState::onUiEvent(struct UiState ui_state) {
 	cmd_speed = (ui_state.pos_enc - start_enc) * 100;
 
 	char txt_speed[8];
-	chsnprintf(txt_speed, sizeof(txt_speed), "C=%5d", cmd_speed);
+	chsnprintf(txt_speed, sizeof(txt_speed), "C=%5ld", cmd_speed);
 	lcdWriteString(&LCDD1, txt_speed, 8);
 
 
@@ -114,7 +114,7 @@ AbstractState* CANState::onUiEvent(struct UiState ui_state) {
 
 AbstractState* CANState::periodic() {
 	char txt_speed[16];
-	chsnprintf(txt_speed, sizeof(txt_speed), "%d:  %.0f RPM       ",identifier, speed);
+	chsnprintf(txt_speed, sizeof(txt_speed), "%ld:  %.0f RPM       ",identifier, speed);
 	lcdWriteString(&LCDD1, txt_speed, 40);
 	return NULL;
 }

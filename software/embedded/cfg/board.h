@@ -61,7 +61,7 @@
 #define	ENC_A                          0U
 #define	ENC_B                          1U
 #define	VCP_TX                         2U
-#define	SERVO5                         3U
+#define	PA03                           3U
 #define	LED1                           4U
 #define	LED2                           5U
 #define	SERVO4                         6U
@@ -166,7 +166,6 @@
 #define	LINE_ENC_A                     PAL_LINE(GPIOA, 0U)
 #define	LINE_ENC_B                     PAL_LINE(GPIOA, 1U)
 #define	LINE_VCP_TX                    PAL_LINE(GPIOA, 2U)
-#define	LINE_SERVO5                    PAL_LINE(GPIOA, 3U)
 #define	LINE_LED1                      PAL_LINE(GPIOA, 4U)
 #define	LINE_LED2                      PAL_LINE(GPIOA, 5U)
 #define	LINE_SERVO4                    PAL_LINE(GPIOA, 6U)
@@ -218,7 +217,7 @@
 #define VAL_GPIOA_MODER                 (PIN_MODE_ALTERNATE(ENC_A) | \
 					 PIN_MODE_ALTERNATE(ENC_B) | \
 					 PIN_MODE_ALTERNATE(VCP_TX) | \
-					 PIN_MODE_ALTERNATE(SERVO5) | \
+					 PIN_MODE_ANALOG(PA03) | \
 					 PIN_MODE_OUTPUT(LED1) | \
 					 PIN_MODE_OUTPUT(LED2) | \
 					 PIN_MODE_ALTERNATE(SERVO4) | \
@@ -235,7 +234,7 @@
 #define VAL_GPIOA_OTYPER                (PIN_OTYPE_PUSHPULL(ENC_A) | \
 					 PIN_OTYPE_PUSHPULL(ENC_B) | \
 					 PIN_OTYPE_PUSHPULL(VCP_TX) | \
-					 PIN_OTYPE_PUSHPULL(SERVO5) | \
+					 PIN_OTYPE_PUSHPULL(PA03) | \
 					 PIN_OTYPE_PUSHPULL(LED1) | \
 					 PIN_OTYPE_PUSHPULL(LED2) | \
 					 PIN_OTYPE_PUSHPULL(SERVO4) | \
@@ -252,7 +251,7 @@
 #define VAL_GPIOA_OSPEEDR               (PIN_OSPEED_SPEED_HIGH(ENC_A) | \
 					 PIN_OSPEED_SPEED_HIGH(ENC_B) | \
 					 PIN_OSPEED_SPEED_HIGH(VCP_TX) | \
-					 PIN_OSPEED_SPEED_HIGH(SERVO5) | \
+					 PIN_OSPEED_SPEED_VERYLOW(PA03) | \
 					 PIN_OSPEED_SPEED_VERYLOW(LED1) | \
 					 PIN_OSPEED_SPEED_VERYLOW(LED2) | \
 					 PIN_OSPEED_SPEED_HIGH(SERVO4) | \
@@ -269,7 +268,7 @@
 #define VAL_GPIOA_PUPDR                 (PIN_PUPDR_PULLUP(ENC_A) | \
 					 PIN_PUPDR_PULLUP(ENC_B) | \
 					 PIN_PUPDR_FLOATING(VCP_TX) | \
-					 PIN_PUPDR_FLOATING(SERVO5) | \
+					 PIN_PUPDR_FLOATING(PA03) | \
 					 PIN_PUPDR_FLOATING(LED1) | \
 					 PIN_PUPDR_FLOATING(LED2) | \
 					 PIN_PUPDR_FLOATING(SERVO4) | \
@@ -286,7 +285,7 @@
 #define VAL_GPIOA_ODR                   (PIN_ODR_LEVEL_HIGH(ENC_A) | \
 					 PIN_ODR_LEVEL_HIGH(ENC_B) | \
 					 PIN_ODR_LEVEL_HIGH(VCP_TX) | \
-					 PIN_ODR_LEVEL_LOW(SERVO5) | \
+					 PIN_ODR_LEVEL_HIGH(PA03) | \
 					 PIN_ODR_LEVEL_LOW(LED1) | \
 					 PIN_ODR_LEVEL_LOW(LED2) | \
 					 PIN_ODR_LEVEL_LOW(SERVO4) | \
@@ -303,7 +302,7 @@
 #define VAL_GPIOA_AFRL			(PIN_AFIO_AF(ENC_A, 1) | \
 					 PIN_AFIO_AF(ENC_B, 1) | \
 					 PIN_AFIO_AF(VCP_TX, 7) | \
-					 PIN_AFIO_AF(SERVO5, 1) | \
+					 PIN_AFIO_AF(PA03, 0) | \
 					 PIN_AFIO_AF(LED1, 0) | \
 					 PIN_AFIO_AF(LED2, 0) | \
 					 PIN_AFIO_AF(SERVO4, 14) | \
@@ -321,7 +320,7 @@
 #define VAL_GPIOA_ASCR                  (PIN_ASCR_DISABLED(ENC_A) | \
 					 PIN_ASCR_DISABLED(ENC_B) | \
 					 PIN_ASCR_DISABLED(VCP_TX) | \
-					 PIN_ASCR_DISABLED(SERVO5) | \
+					 PIN_ASCR_DISABLED(PA03) | \
 					 PIN_ASCR_DISABLED(LED1) | \
 					 PIN_ASCR_DISABLED(LED2) | \
 					 PIN_ASCR_DISABLED(SERVO4) | \
@@ -338,7 +337,7 @@
 #define VAL_GPIOA_LOCKR                 (PIN_LOCKR_DISABLED(ENC_A) | \
 					 PIN_LOCKR_DISABLED(ENC_B) | \
 					 PIN_LOCKR_DISABLED(VCP_TX) | \
-					 PIN_LOCKR_DISABLED(SERVO5) | \
+					 PIN_LOCKR_DISABLED(PA03) | \
 					 PIN_LOCKR_DISABLED(LED1) | \
 					 PIN_LOCKR_DISABLED(LED2) | \
 					 PIN_LOCKR_DISABLED(SERVO4) | \
@@ -1043,8 +1042,6 @@
 #define AF_LINE_ENC_B                    1U
 #define AF_VCP_TX                        7U
 #define AF_LINE_VCP_TX                   7U
-#define AF_SERVO5                        1U
-#define AF_LINE_SERVO5                   1U
 #define AF_SERVO4                        14U
 #define AF_LINE_SERVO4                   14U
 #define AF_SERVO3                        1U
@@ -1070,6 +1067,22 @@
 #define AF_SDA                           4U
 #define AF_LINE_SDA                      4U
 
+
+
+#define BOARD_GROUP_DECLFOREACH(line, group) \
+  static const ioline_t group ## _ARRAY[] = {group}; \
+  for (ioline_t i=0, line =  group ## _ARRAY[i]; (i < group ## _SIZE) && (line = group ## _ARRAY[i]); i++)
+
+#define BOARD_GROUP_FOREACH(line, group) \
+  for (ioline_t i=0, line =  group ## _ARRAY[i]; (i < group ## _SIZE) && (line = group ## _ARRAY[i]); i++)
+
+
+#define BOARD_GROUP_DECLFOR(array, index, group)  \
+  static const ioline_t group ## _ARRAY[] = {group};    \
+  for (ioline_t index=0, *array =  (ioline_t *) group ## _ARRAY; index < group ## _SIZE; index++)
+
+#define BOARD_GROUP_FOR(array, index, group)  \
+  for (ioline_t index=0, *array =  (ioline_t *) group ## _ARRAY; index < group ## _SIZE; index++)
 
 #if !defined(_FROM_ASM_)
 #ifdef __cplusplus

@@ -125,21 +125,24 @@ BOARDGEN = $(VARIOUS)/TOOLS/boardGen.pl
 BMPFLASH = $(VARIOUS)/TOOLS/bmpflash
 
 
-
-
+# Licensing files.
+include $(CHIBIOS)/os/license/license.mk
 # Startup files.
 include $(CHIBIOS)/os/common/startup/ARMCMx/compilers/GCC/mk/startup_stm32l4xx.mk
 # HAL-OSAL files (optional).
 include $(CHIBIOS)/os/hal/hal.mk
 include $(CHIBIOS)/os/hal/ports/STM32/STM32L4xx/platform_l432.mk
 include $(CFG)/board.mk
-include $(CHIBIOS)/os/hal/osal/rt/osal.mk
+include $(CHIBIOS)/os/hal/osal/rt-nil/osal.mk
 # RTOS files (optional).
 include $(CHIBIOS)/os/rt/rt.mk
-include $(CHIBIOS)/os/common/ports/ARMCMx/compilers/GCC/mk/port_v7m.mk
+include $(CHIBIOS)/os/common/ports/ARMv7-M/compilers/GCC/mk/port.mk
 # Auto-build files in ./source recursively.
 include $(CHIBIOS)/tools/mk/autobuild.mk
 # Other files (optional).
+# include $(CHIBIOS)/os/test/test.mk
+# include $(CHIBIOS)/test/rt/rt_test.mk
+#include $(CHIBIOS)/os/oslib/oslib.mk
 
 
 # Define linker script file here
@@ -147,24 +150,24 @@ LDSCRIPT= $(STARTUPLD)/STM32L432xC.ld
 
 # C sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
-CSRC += $(STARTUPSRC) \
-       $(KERNSRC) \
-       $(PORTSRC) \
-       $(OSALSRC) \
-       $(HALSRC) \
-       $(PLATFORMSRC) \
-       $(BOARDSRC) \
-			 $(AUTOCSRC) \
+CSRC += $(ALLCSRC) \
        $(CHIBIOS)/os/various/syscalls.c \
        $(VARIOUS)/stdutil.c \
        $(VARIOUS)/printf.c \
        $(VARIOUS)/microrl/microrlShell.c \
        $(VARIOUS)/microrl/microrl.c
 
+# $(STARTUPSRC) \
+#        $(KERNSRC) \
+#        $(PORTSRC) \
+#        $(OSALSRC) \
+#        $(HALSRC) \
+#        $(PLATFORMSRC) \
+
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
-CPPSRC += $(AUTOCPPSRC)
+CPPSRC += $(ALLCPPSRC)
 
 # C sources to be compiled in ARM mode regardless of the global setting.
 # NOTE: Mixing ARM and THUMB mode enables the -mthumb-interwork compiler
@@ -195,7 +198,7 @@ INCDIR += $(CHIBIOS)/os/license \
          $(HALINC) $(PLATFORMINC) $(BOARDINC) $(TESTINC) \
          $(CHIBIOS)/os/various $(VARIOUS)
 
-INCDIR += $(AUTOINC)
+INCDIR += $(ALLINC)
 
 #
 # Project, sources and paths
@@ -263,7 +266,7 @@ ULIBS =
 # End of user defines
 ##############################################################################
 
-RULESPATH = $(CHIBIOS)/os/common/startup/ARMCMx/compilers/GCC
+RULESPATH = $(CHIBIOS)/os/common/startup/ARMCMx/compilers/GCC/mk
 include $(RULESPATH)/rules.mk
 $(OBJS): $(CFG)/board.h
 
