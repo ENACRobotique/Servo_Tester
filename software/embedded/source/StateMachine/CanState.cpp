@@ -5,12 +5,12 @@
 #include "printf.h"
 #include "MainMenuState.h"
 
-int32_t cmd_speed = 0;
+static int32_t cmd_speed = 0;
 
-float angle;
-float speed;
-int16_t torque;
-uint32_t identifier;
+static float angle;
+static float speed;
+static int16_t torque;
+static uint32_t identifier;
 
 inline uint16_t swap16(uint16_t x) {
 	return x>>8 | x<<8;
@@ -83,7 +83,7 @@ CANState::CANState() {
 }
 
 
-int32_t start_enc = 0;
+static int32_t start_enc = 0;
 
 void CANState::enter(int32_t pos_enc) {
 	(void)pos_enc;
@@ -101,6 +101,10 @@ void CANState::leave() {
 
 AbstractState* CANState::onUiEvent(struct UiState ui_state) {
 	(void)ui_state;
+
+	if(ui_state.ret_clicked) {
+		return &mainMenuState;
+	}
 
 	cmd_speed = (ui_state.pos_enc - start_enc) * 100;
 

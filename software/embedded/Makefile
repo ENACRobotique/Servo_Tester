@@ -23,7 +23,7 @@ endif
 
 
 ifeq ($(OPT_MODE),DEBUG)
-  USE_OPT =  -Og  -ggdb3  -Wall -Wextra \
+  USE_OPT =  -O0  -ggdb3  -Wall -Wextra \
             -falign-functions=16 -fomit-frame-pointer \
             $(GCC_DIAG)
   USE_LTO = no
@@ -155,7 +155,9 @@ CSRC += $(ALLCSRC) \
        $(VARIOUS)/stdutil.c \
        $(VARIOUS)/printf.c \
        $(VARIOUS)/microrl/microrlShell.c \
-       $(VARIOUS)/microrl/microrl.c
+       $(VARIOUS)/microrl/microrl.c \
+       $(VARIOUS)/esc_dshot.c \
+       $(VARIOUS)/hal_stm32_dma.c
 
 # $(STARTUPSRC) \
 #        $(KERNSRC) \

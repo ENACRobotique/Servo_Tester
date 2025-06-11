@@ -15,6 +15,7 @@ extern "C" {
 #include "StateMachine/StateManager.h"
 #include "Dynamixel.h"
 #include "STS3032.h"
+#include "dshot.h"
 
 
 static THD_WORKING_AREA(waUiStateMachine, 500);
@@ -40,6 +41,7 @@ int main(void) {
   chSysInit();
   initHeap();
 
+  init_dshot();
   init_servos();
   init_I2C();
   init_CAN();

@@ -12,6 +12,7 @@
 #include "CanState.h"
 #include "I2CState.h"
 #include "STS3032.h"
+#include "DShotState.h"
 
 MainMenuState mainMenuState = MainMenuState();
 
@@ -21,6 +22,7 @@ enum {
 	MENU_STS3032,
 	MENU_I2C,
 	MENU_CAN,
+	MENU_DSHOT,
 };
 
 char* titles_mainmenu[] = {
@@ -28,7 +30,8 @@ char* titles_mainmenu[] = {
 	(char*)"Dynamixels",
 	(char*)"STS3032   ",
 	(char*)"I2C       ",
-	(char*)"CAN       "
+	(char*)"CAN       ",
+	(char*)"DSHOT     ",
 };
 
 void MainMenuState::enter(int32_t pos_enc) {
@@ -65,6 +68,8 @@ AbstractState* MainMenuState::onUiEvent(struct UiState ui_state) {
 			return &i2cState;
 		case MENU_CAN:
 			return &canState;
+		case MENU_DSHOT:
+		return &dshotState;
 		}
 	}
 
